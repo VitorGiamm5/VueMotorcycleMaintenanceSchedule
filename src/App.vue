@@ -1,82 +1,60 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const scheduleData = ref([]);
+const loading = ref(true);
+
+const router = useRouter();
+
+const editRecord = (id: number) => {
+    router.push({ name: 'ScheduleEdit', params: { id } });
+};
+
+const deleteRecord = (id: number) => {
+    console.log(`Delete record with id: ${id}`);
+};
+
+onMounted(async () => {
+    try {
+        const response = await axios.get('http://localhost:9103/api/schedule');
+        scheduleData.value = response.data.data;
+        loading.value = false;
+
+    } catch (error) {
+        console.error('Error fetching schedule data:', error);
+        loading.value = false;
+    }
+});
+
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <HelloWorld msg="Admin panel" subMsg="Navigate to beyond!" />
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/schedule">Schedule</RouterLink>
-      </nav>
+    <ProgressSpinner v-if="loading" />
+    <div v-else class="schedule">
+        <DataTable :value="scheduleData">
+            <Column field="id" header="ID" :style="{ width: '10rem' }"></Column>
+            <Column field="status" header="Status" :style="{ width: '7rem' }"></Column>
+            <Column field="name" header="Name" :style="{ width: '10rem' }"></Column>
+            <Column field="email" header="Email" :style="{ width: '10rem' }"></Column>
+            <Column field="phoneDDD" header="Phone DDD" :style="{ width: '7rem' }"></Column>
+            <Column field="phone" header="Phone" :style="{ width: '10rem' }"></Column>
+            <Column field="motorcycleId" header="Motorcycle Plate" :style="{ width: '10rem' }"></Column>
+            <Column field="scheduleDate" header="Schedule Date"></Column>
+            <Column header="Actions" :style="{ width: '10rem' }">
+                <template #body="slotProps">
+                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                        @click="editRecord(slotProps.data.id)" />
+                    <Button icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                        @click="deleteRecord(slotProps.data.id)" />
+                </template>
+            </Column>
+        </DataTable>
+
+
     </div>
-  </header>
-  <RouterView />
+
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
+<style></style>
